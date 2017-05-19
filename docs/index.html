@@ -250,6 +250,24 @@ button:active.color-2 {
   width: 100%;
   outline: none;
   font-size: 16px;
+  font-family: Consolas;
+  text-align: center;
+  color: #ddd;
+}
+.output-result:focus {
+  background: #f8f8f8;
+}
+.output-result::selection {
+  color: rgb(68,138,255);
+//  background: #eee;
+}
+.output-raw {
+  font-size: 10px;
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 2px;
+  padding: 10px;
+  color: #aaa;
 }
 </style>
 </head>
@@ -265,7 +283,7 @@ button:active.color-2 {
   </div>
   <div class="row">
     <div class="col-12 col form-group">
-      <input type="password" id="input-master" _placeholder="Master" autocomplete="off" tabindex="2" required="required" />
+      <input type="password" id="input-master" _placeholder="Master" autocomplete="off" tabindex="2" required="required" onfocus="this.type='text'" onblur="this.type='password'" />
       <label for="input-master" class="control-label">Master</label>
       <i class="bar"></i>
     </div>
@@ -285,7 +303,12 @@ button:active.color-2 {
   </div>
   <div class="row">
     <div class="col-12 col">
-      <input type="text" id="output-result" autocomplete="off" _readonly class="output-result" ></span>
+      <input type="text" id="output-result" autocomplete="off" readonly class="output-result" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-12 col">
+      <textarea id="output-raw" autocomplete="off" readonly class="output-raw" rows="3"></textarea>
     </div>
   </div>
 </div>
@@ -299,7 +322,9 @@ window.onload = function() {
   $salt = document.getElementById("input-salt");
   $master = document.getElementById("input-master");
   $result = document.getElementById("output-result");
+  $raw = document.getElementById("output-raw");
 
+  
   $salt.focus();
   generatePassword();
 }
@@ -313,6 +338,7 @@ function generatePassword() {
     var keyArr = scrypt.crypto_scrypt( master, salt, N, r, p, L );
     var keyHex = scrypt.to_hex(keyArr);
     var password = hexToBase64(keyHex);
+    $raw.value = password;
 //    console.log(password);
     password = processPassword(password);
     $result.value = password;
@@ -325,6 +351,45 @@ function generatePassword() {
     */
   });
 }
+
+function processPassword(pass) {
+  var up = [], low = [], num = [], sym = [];
+  var symMap = ["!", "@", "#", "$", "-", "+", "_", ",", ";", "."];
+
+  pass = pass.replace(/[\+\/=]/g, '');
+  console.log(pass);
+  for ( var i = 0 ; i < pass.length ; i++ ) {
+    if (pass[i].match(/[A-Z]/) != null) { up.push(pass[i]); }
+    if (pass[i].match(/[a-z]/) != null) { low.push(pass[i]); }
+    if (pass[i].match(/[0-9]/) != null) { num.push(pass[i]); }
+  }
+  console.log(up, low, num);
+  pass =
+    up[0] + low[0] + num[0] +
+    symMap[num[4]] +
+    up[1] + low[1] + num[1] +
+    up[2] + low[2] + num[2] +
+    symMap[num[5]] +
+    up[3] + low[3] + num[3];
+/*
+  pass =
+    up[up.length-1] + up[up.length-2] +
+    low[low.length-1] + low[low.length-2] +
+    num[num.length-1] + num[num.length-2] + num[num.length-3] +
+    pass.substr(0, 8);
+*/
+  return pass;
+}
+
+function hexToBase64(hexString) {
+  var tmp = hexString.match(/\w{2}/g).map(function(a) {
+    return String.fromCharCode(parseInt(a, 16));
+  });
+  tmp = tmp.join("");
+  return btoa(tmp);
+}
+
+
 
 function copyToClipboard() {
   $result.select();
@@ -339,29 +404,6 @@ function clearAll() {
   $salt.value = $master.value = $result.value = '';
 }
 
-function processPassword(pass) {
-  var upperChars = [], lowerChars = [], numChars = [];
-
-  pass = pass.replace(/[\+\/=]/g, '');
-  console.log(pass);
-  for ( var i = 0 ; i < pass.length ; i++ ) {
-    if (pass[i].match(/[A-Z]/) != null) { upperChars.push(i); }
-    if (pass[i].match(/[a-z]/) != null) { lowerChars.push(i); }
-    if (pass[i].match(/[0-9]/) != null) { numChars.push(i); }
-  }
-  console.log(upperChars, lowerChars, numChars);
-
-  pass = pass.substr(0, 15);
-  return pass;
-}
-
-function hexToBase64(hexString) {
-  var tmp = hexString.match(/\w{2}/g).map(function(a) {
-    return String.fromCharCode(parseInt(a, 16));
-  });
-  tmp = tmp.join("");
-  return btoa(tmp);
-}
 
 
 </script>

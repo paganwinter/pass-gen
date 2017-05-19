@@ -324,9 +324,8 @@ window.onload = function() {
   $result = document.getElementById("output-result");
   $raw = document.getElementById("output-raw");
 
-  
   $salt.focus();
-  generatePassword();
+  // generatePassword();
 }
 
 function generatePassword() {
@@ -395,7 +394,7 @@ function copyToClipboard() {
   $result.select();
   try {
     document.execCommand('copy');
-    $result.value = '- copied -';
+    // $result.value = '- copied -';
   } catch (err) {
     alert('Unable to Copy');
   }

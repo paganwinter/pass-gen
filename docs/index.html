@@ -3,6 +3,8 @@
 <title>Generator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
+<!-- http://dandyer.co.uk/password/ -->
+
 <!-- https://getmdl.io/started/index.html -->
 <link rel="stylesheet" href="./material.min.blue-gray.css">
 <script src="./material.min.js"></script>
@@ -69,6 +71,7 @@ window.onload = function() {
   $result = document.getElementById("result");
 
   $salt.focus();
+  generatePassword();
 }
 
 function generatePassword() {
@@ -79,9 +82,52 @@ function generatePassword() {
   hash = sha256_encode_bytes();
 
   password = String.fromCharCode.apply(String, hash);
-  password = window.btoa(password).substring(0, 15);
+  password = window.btoa(password);
+  console.log('original Base64:', password);
+
+///////////
+  // Remove non alphanumeric chars
+  password = password.replace(/[\+\/=]/g, '');
+  console.log('non alphanumeric removed', password);
+
+  // Use last 2 digits of ASCII code of last char as number
+  var number = password.charCodeAt(password.length-1);
+  number = (''+number).slice(-2);
+  console.log('number:', number, password.charCodeAt(password.length-1));
+
+  // Use 2nd last char as upper case char
+  var upperCase = password[password.length-2];
+  if (/^\d$/.test(upperCase))
+    upperCase = String.fromCharCode(97 + upperCase);
+  upperCase = upperCase.toUpperCase();
+  console.log('upperCase:', upperCase, password[password.length-2]);
+
+  // Use 3rd last char as lower case char
+  var lowerCase = password[password.length-3];
+  if (/^\d$/.test(lowerCase))
+    lowerCase = String.fromCharCode(97 + lowerCase);
+  lowerCase = lowerCase.toLowerCase();
+  console.log('lowerCase:', lowerCase, password[password.length-3]);
+
+  // Use 4th last char as symbol
+  symbol = password.charCodeAt(password.length-4);
+  symbolPos = (''+symbol).slice(-1);
+  console.log('symbolPos:', symbolPos, password.charCodeAt(password.length-4));
+
+  password = password.substring(0, 10) + upperCase + lowerCase + number;
+  password = password.substr(0, symbolPos) + '@' + password.substr(symbolPos);
+
+  console.log(password, password.length);
+
+  var numHash = 0;
+  for ( var i = 0, len = password.length ; i < password.length ; i++ ) {
+    chr   = password.charCodeAt(i);
+    numHash  = ((numHash << 5) - numHash) + chr;
+    numHash |= 0; // Convert to 32bit integer
+//    console.log(chr, numHash);
+  }
+///////////
   $result.value = password;
-  return false;
 }
 function copyToClipboard() {
   $result.select();

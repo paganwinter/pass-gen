@@ -234,8 +234,14 @@ button:active {
 button.color-1 {
   background: rgb(68,138,255);
 }
+button:active.color-1 {
+  background: rgba(68,138,255, 0.5);
+}
 button.color-2 {
   background: rgb(96,125,139);
+}
+button:active.color-2 {
+  background: rgba(96,125,139, 0.5);
 }
 </style>
 </head>
@@ -263,9 +269,9 @@ button.color-2 {
     <div class="col-3 col">
       <button type="button"  class="color-2" onclick="copyToClipboard()">Copy</button>
     </div>
-    <div class="col-2 col">
+    <div class="col-1 col">
     </div>
-    <div class="col-4 col">
+    <div class="col-5 col">
       <button type="submit"  class="color-1" onclick="generatePassword()" tabindex="3" >Generate</button>
     </div>
   </div>

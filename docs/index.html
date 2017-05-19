@@ -96,7 +96,7 @@
 
 .row {
   width: 100%;
-  margin-bottom: 20px;
+//  margin-bottom: 0px;
   padding-bottom: 10px;
   display: flex;
   flex-wrap: wrap;
@@ -235,19 +235,27 @@ button.color-1 {
   background: rgb(68,138,255);
 }
 button:active.color-1 {
-  background: rgba(68,138,255, 0.5);
+  background: rgba(68,138,255, 0.2);
 }
 button.color-2 {
   background: rgb(96,125,139);
 }
 button:active.color-2 {
-  background: rgba(96,125,139, 0.5);
+  background: rgba(96,125,139, 0.2);
+}
+.output-result {
+  border: 1px solid #ddd;
+  border-radius: 2px;
+  padding: 10px;
+  width: 100%;
+  outline: none;
+  font-size: 16px;
 }
 </style>
 </head>
 <body>
 
-<div class="grid" style="max-width: 420px; _background: rgba(0,2,4,0.2);">
+<div class="grid" style="max-width: 420px; margin-top: 80px;">
   <div class="row">
     <div class="col-12 col form-group">
       <input type="text" id="input-salt" _placeholder="Salt" autocomplete="off" tabindex="1" required="required" />
@@ -277,7 +285,7 @@ button:active.color-2 {
   </div>
   <div class="row">
     <div class="col-12 col">
-      <input type="text" id="output-result" autocomplete="off" readonly ></span>
+      <input type="text" id="output-result" autocomplete="off" _readonly class="output-result" ></span>
     </div>
   </div>
 </div>
@@ -293,19 +301,20 @@ window.onload = function() {
   $result = document.getElementById("output-result");
 
   $salt.focus();
-//  generatePassword();
+  generatePassword();
 }
 
 function generatePassword() {
   scrypt_module_factory(function (scrypt) {
-    var keyArr = scrypt.crypto_scrypt(
-      scrypt.encode_utf8($master.value),
-      scrypt.encode_utf8($salt.value),
-      16384, 8, 1, 64
-    );
+    var N=16384, r=8, p=1, L=128;
+    var salt = scrypt.encode_utf8($master.value);
+    var master = scrypt.encode_utf8($salt.value);
+    //salt, N, r, p, L
+    var keyArr = scrypt.crypto_scrypt( master, salt, N, r, p, L );
     var keyHex = scrypt.to_hex(keyArr);
     var password = hexToBase64(keyHex);
-    console.log(password);
+//    console.log(password);
+    password = processPassword(password);
     $result.value = password;
     $result.select();
 
@@ -328,6 +337,22 @@ function copyToClipboard() {
 }
 function clearAll() {
   $salt.value = $master.value = $result.value = '';
+}
+
+function processPassword(pass) {
+  var upperChars = [], lowerChars = [], numChars = [];
+
+  pass = pass.replace(/[\+\/=]/g, '');
+  console.log(pass);
+  for ( var i = 0 ; i < pass.length ; i++ ) {
+    if (pass[i].match(/[A-Z]/) != null) { upperChars.push(i); }
+    if (pass[i].match(/[a-z]/) != null) { lowerChars.push(i); }
+    if (pass[i].match(/[0-9]/) != null) { numChars.push(i); }
+  }
+  console.log(upperChars, lowerChars, numChars);
+
+  pass = pass.substr(0, 15);
+  return pass;
 }
 
 function hexToBase64(hexString) {

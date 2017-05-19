@@ -2,116 +2,110 @@
 <head>
 <title>Generator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- https://getmdl.io/started/index.html -->
+<link rel="stylesheet" href="./material.min.blue-gray.css">
+<script src="./material.min.js"></script>
+
 <style>
-input[type="text"] {
-  border-width: 2px;
-}
-input {
-  border: 2px solid #def;
-  border-radius: 3px;
-  outline-color: #789;
-  padding: 5px;
-  font-size: 16px;
-  box-shadow: none;
-}
+@import url(http://fonts.googleapis.com/css?family=Roboto);
 </style>
+
 </head>
 <body>
 
-<div>
-  <input type="text" id="site" placeholder="Site name/domain" autocomplete="off" />
-  <input type="password" id="master" placeholder="Master" autocomplete="off" />
-  <button onclick="generatePassword()">Generate</button>
-  <input type="text" id="result" _disabled autocomplete="off" readonly ></span>
-  <button onclick="copyToClipboard()">Copy</button>
-<!--  <button onclick="copyToClipboardAlt(document.getElementById('result').value)">Copy</button> -->
-  <button onclick="document.getElementById('result').value = ''">Clear</button>
+<div style="_width: 800px; margin: 0 auto;">
+  <div class="mdl-grid">
+    <div class="mdl-layout-spacer"></div>
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell mdl-cell--4-col">
+      <input type="text" class="mdl-textfield__input" id="salt" _placeholder="Site name/domain" autocomplete="off" />
+      <label for="site" class="mdl-textfield__label">Salt</label>
+    </div>
+    <div class="mdl-layout-spacer"></div>
+  </div>
+  <div class="mdl-grid">
+    <div class="mdl-layout-spacer"></div>
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell mdl-cell--4-col">
+      <input type="password" class="mdl-textfield__input" id="master" _placeholder="Master" autocomplete="off" />
+      <label for="site" class="mdl-textfield__label">Master</label>
+    </div>
+    <div class="mdl-layout-spacer"></div>
+  </div>
+
+  <div class="mdl-grid">
+    <div class="mdl-layout-spacer"></div>
+    <div class="mdl-cell mdl-cell--1-col">
+      <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick="generatePassword()">Generate</button>
+    </div>
+
+    <div class="mdl-cell mdl-cell--1-col">
+      <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick="copyToClipboard()">Copy</button>
+    </div>
+
+    <div class="mdl-cell mdl-cell--1-col">
+      <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored" onclick="clearAll()">Clear</button>
+    </div>
+    <div class="mdl-layout-spacer"></div>
+  </div>
+
+  <div class="mdl-grid">
+    <div class="mdl-layout-spacer"></div>
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell mdl-cell--4-col">
+      <input type="text" class="mdl-textfield__input" id="result" autocomplete="off" readonly ></span>
+    </div>
+    <div class="mdl-layout-spacer"></div>
+  </div>
 </div>
 
 <script>
-var $site, $master, $result;
+var $salt, $master, $result;
 
 window.onload = function() {
-  site = document.getElementById("site");
-  master = document.getElementById("master");
-  result = document.getElementById("result");
+  $salt = document.getElementById("salt");
+  $master = document.getElementById("master");
+  $result = document.getElementById("result");
 
-  site.focus();
+  $salt.focus();
 }
 
 function generatePassword() {
-  text = site.value + " " + master.value;
-  console.log('text', text);
+  text = $salt.value + " " + $master.value;
   sha256_init();
   sha256_update(text, text.length);
   sha256_final();
   hash = sha256_encode_bytes();
-  console.log('hash', hash);
 
   password = String.fromCharCode.apply(String, hash);
-  console.log('password', password);
   password = window.btoa(password).substring(0, 15);
-
-  console.log('password', password);
-  result.value = password;
+  $result.value = password;
 }
-function copyToClipboard2() {
-  result.select();
+function copyToClipboard() {
+  $result.select();
   try {
-    var successful = document.execCommand('copy');
-    var msg = successful ? 'successful' : 'unsuccessful';
-//    alert('Copied');
+    document.execCommand('copy');
+    $result.value = '- copied -';
   } catch (err) {
     alert('Unable to Copy');
   }
 }
+function clearAll() {
+  $salt.value = $master.value = $result.value = '';
+}
+/*
+<!--  <button onclick="copyToClipboardAlt(document.getElementById('result').value)">Copy</button> -->
 function copyToClipboardAlt(text) {
   window.prompt("Copy to clipboard: Ctrl+C, Enter", text);
 }
-
-
-
+*/
 </script>
 
 
 <script>
 /*
 * A JavaScript implementation of the SHA256 hash function.
-*
 * FILE:	sha256.js
 * VERSION:	0.8
 * AUTHOR:	Christoph Bichlmeier <informatik@zombiearena.de>
-*
-* NOTE: This version is not tested thoroughly!
-*
-* Copyright (c) 2003, Christoph Bichlmeier
-* All rights reserved.
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions
-* are met:
-* 1. Redistributions of source code must retain the above copyright
-*    notice, this list of conditions and the following disclaimer.
-* 2. Redistributions in binary form must reproduce the above copyright
-*    notice, this list of conditions and the following disclaimer in the
-*    documentation and/or other materials provided with the distribution.
-* 3. Neither the name of the copyright holder nor the names of contributors
-*    may be used to endorse or promote products derived from this software
-*    without specific prior written permission.
-*
-* ======================================================================
-*
-* THIS SOFTWARE IS PROVIDED BY THE AUTHORS ''AS IS'' AND ANY EXPRESS
-* OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-* ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE
-* LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
-* BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-* WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
-* OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /* SHA256 logical functions */

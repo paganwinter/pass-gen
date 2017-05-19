@@ -13,12 +13,12 @@
 
 </head>
 <body>
-
+<form onSubmit="generatePassword(this)">
 <div style="_width: 1000px; margin: 0 auto;">
   <div class="mdl-grid">
     <div class="mdl-layout-spacer"></div>
     <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell mdl-cell--4-col">
-      <input type="text" class="mdl-textfield__input" id="salt" _placeholder="Site name/domain" autocomplete="off" />
+      <input type="text" class="mdl-textfield__input" id="salt" _placeholder="Site name/domain" autocomplete="off" tabindex="1" />
       <label for="site" class="mdl-textfield__label">Salt</label>
     </div>
     <div class="mdl-layout-spacer"></div>
@@ -26,7 +26,7 @@
   <div class="mdl-grid">
     <div class="mdl-layout-spacer"></div>
     <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell mdl-cell--4-col">
-      <input type="password" class="mdl-textfield__input" id="master" _placeholder="Master" autocomplete="off" />
+      <input type="password" class="mdl-textfield__input" id="master" _placeholder="Master" autocomplete="off" tabindex="1" />
       <label for="site" class="mdl-textfield__label">Master</label>
     </div>
     <div class="mdl-layout-spacer"></div>
@@ -35,16 +35,18 @@
   <div class="mdl-grid">
     <div class="mdl-layout-spacer"></div>
     <div class="mdl-cell mdl-cell--1-col">
-      <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick="generatePassword()">Generate</button>
-    </div>
-
-    <div class="mdl-cell mdl-cell--1-col"></div>
-    <div class="mdl-cell mdl-cell--1-col">
-      <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored" onclick="copyToClipboard()">Copy</button>
+      <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick="generatePassword()">Generate</button>
     </div>
 
     <div class="mdl-cell mdl-cell--1-col">
-      <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored" onclick="clearAll()">Clear</button>
+      <!-- filler -->
+    </div>
+    <div class="mdl-cell mdl-cell--1-col">
+      <button type="button" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored" onclick="copyToClipboard()">Copy</button>
+    </div>
+
+    <div class="mdl-cell mdl-cell--1-col">
+      <button type="button" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored" onclick="clearAll()">Clear</button>
     </div>
     <div class="mdl-layout-spacer"></div>
   </div>
@@ -57,6 +59,7 @@
     <div class="mdl-layout-spacer"></div>
   </div>
 </div>
+</form>
 
 <script>
 var $salt, $master, $result;
@@ -69,7 +72,8 @@ window.onload = function() {
   $salt.focus();
 }
 
-function generatePassword() {
+function generatePassword(e) {
+  e.preventDefault();
   text = $salt.value + " " + $master.value;
   sha256_init();
   sha256_update(text, text.length);
@@ -79,6 +83,7 @@ function generatePassword() {
   password = String.fromCharCode.apply(String, hash);
   password = window.btoa(password).substring(0, 15);
   $result.value = password;
+  return false;
 }
 function copyToClipboard() {
   $result.select();

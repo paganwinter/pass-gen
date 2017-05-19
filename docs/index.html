@@ -13,7 +13,8 @@
 
 </head>
 <body>
-<form onSubmit="generatePassword(this)">
+
+<form1 onSubmit="generatePassword(this)">
 <div style="_width: 1000px; margin: 0 auto;">
   <div class="mdl-grid">
     <div class="mdl-layout-spacer"></div>
@@ -26,7 +27,7 @@
   <div class="mdl-grid">
     <div class="mdl-layout-spacer"></div>
     <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label mdl-cell mdl-cell--4-col">
-      <input type="password" class="mdl-textfield__input" id="master" _placeholder="Master" autocomplete="off" tabindex="1" />
+      <input type="password" class="mdl-textfield__input" id="master" _placeholder="Master" autocomplete="off" tabindex="2" />
       <label for="site" class="mdl-textfield__label">Master</label>
     </div>
     <div class="mdl-layout-spacer"></div>
@@ -35,18 +36,16 @@
   <div class="mdl-grid">
     <div class="mdl-layout-spacer"></div>
     <div class="mdl-cell mdl-cell--1-col">
-      <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick="generatePassword()">Generate</button>
-    </div>
-
-    <div class="mdl-cell mdl-cell--1-col">
-      <!-- filler -->
+      <button type="button" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored" onclick="clearAll()">Clear</button>
     </div>
     <div class="mdl-cell mdl-cell--1-col">
       <button type="button" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored" onclick="copyToClipboard()">Copy</button>
     </div>
-
     <div class="mdl-cell mdl-cell--1-col">
-      <button type="button" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored" onclick="clearAll()">Clear</button>
+      <!-- filler -->
+    </div>
+    <div class="mdl-cell mdl-cell--1-col">
+      <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick="generatePassword()" tabindex="3" >Generate</button>
     </div>
     <div class="mdl-layout-spacer"></div>
   </div>
@@ -59,7 +58,7 @@
     <div class="mdl-layout-spacer"></div>
   </div>
 </div>
-</form>
+</form1>
 
 <script>
 var $salt, $master, $result;
@@ -72,8 +71,7 @@ window.onload = function() {
   $salt.focus();
 }
 
-function generatePassword(e) {
-  e.preventDefault();
+function generatePassword() {
   text = $salt.value + " " + $master.value;
   sha256_init();
   sha256_update(text, text.length);

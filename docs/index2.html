@@ -9,6 +9,9 @@
 <link rel="stylesheet" href="./material.min.blue-gray.css">
 <script src="./material.min.js"></script>
 
+<!-- <script src="sha256.js"></script> -->
+<script src="scrypt.js"></script> <!-- https://github.com/tonyg/js-scrypt -->
+
 <style>
 @import url(http://fonts.googleapis.com/css?family=Roboto);
 </style>
@@ -71,18 +74,21 @@ window.onload = function() {
   $result = document.getElementById("result");
 
   $salt.focus();
-  generatePassword();
+  generatePassword("abc");
 }
 
-function generatePassword() {
-  text = $salt.value + " " + $master.value;
+function generatePassword(salt, master) {
+  text = $master.value + $salt.value;
   sha256_init();
   sha256_update(text, text.length);
   sha256_final();
   hash = sha256_encode_bytes();
+  console.log(hash)
 
   password = String.fromCharCode.apply(String, hash);
+  console.log(password)
   password = window.btoa(password);
+
   console.log('original Base64:', password);
 
 ///////////
@@ -147,6 +153,26 @@ function copyToClipboardAlt(text) {
   window.prompt("Copy to clipboard: Ctrl+C, Enter", text);
 }
 */
+
+/*
+function generatePasswordScrypt(master, salt) {
+  scrypt_module_factory(function (scrypt) {
+    var N=16384, r=8, p=1, L=128;
+    master = scrypt.encode_utf8(master);
+    salt = scrypt.encode_utf8(salt);
+
+    var keyArr = scrypt.crypto_scrypt( master, salt, N, r, p, L );
+    var keyHex = scrypt.to_hex(keyArr);
+    var rawBase64 = hexToB64(keyHex);
+    return rawBase64;
+
+//    var keyBin = scrypt.decode_latin1(keyArr);
+//    console.log(window.btoa(keyBin));
+//    console.log(keyArr, keyHex, keyBin);
+  });
+}
+*/
+
 </script>
 
 

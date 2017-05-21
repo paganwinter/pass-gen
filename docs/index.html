@@ -295,9 +295,7 @@ function generatePassword() {
     resultBox.autocomplete = "off"
     resultBox.readonly = true;
     resultBox.value = p;
-    resultBox.onclick = function() {
-      resultBox.select();
-    }
+//    resultBox.onclick = function() { resultBox.select(); }
     $passContainer.appendChild(resultBox);
   })
 

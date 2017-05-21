@@ -337,29 +337,36 @@ function calculatePassword(master, salt) {
   var symMap = ["!", "@", "#", "$", "-", "+", "_", ",", ";", "."];
   var sym = ["@", "-"];
 
+  // get SHA512 hash in hex
   // hashB64 = getHash(text, 'SHA512', 'B64');
   // hashHex = getHash(text, 'SHA512', 'HEX');
   var hash = getHash(text);
-  var hex = hash.match(/\w{2}/g); //.join(" ");
-  var decimal = hash.match(/\w{2}/g).map(a => { return parseInt(a, 16) });
-  var ascii = decimal.map(a => { return String.fromCharCode(a) }).join("");
-  var b64 = btoa(ascii);
+  var hex = hash.match(/\w{2}/g); //.join(" "); // format the hex in 2 char format
+  var decimal = hash.match(/\w{2}/g).map(a => { return parseInt(a, 16) }); // get decimal value for each hex char pair
+  var ascii = decimal.map(a => { return String.fromCharCode(a) }).join(""); // get ASCII text from decimal
+  var b64 = btoa(ascii); //  base64 encode the ASCII text
   console.log("hash", hash)
   console.log("hex", hex)
   console.log("decimal", decimal)
   console.log("ascii", ascii)
   console.log("b64 ", b64)
 
-  var chars = b64.replace(/[\W]/g, '');
-  var up    = chars.match(/[A-Z]/g);
-  var low   = chars.match(/[a-z]/g);
-  var num   = chars.match(/[0-9]/g);
+  var chars = b64.replace(/[\W]/g, ''); // get list of alphanumeric chars from base64 by removing (/+=)
+  var up    = chars.match(/[A-Z]/g); // get list of upper case letters
+  var low   = chars.match(/[a-z]/g); // get list of lower case letters
+  var num   = chars.match(/[0-9]/g); // get list of numbers
+  var pos = decimal.filter((x, i, a) => a.indexOf(x) == i); // get a list of unique numbers from the decimal array
 
-  var pos = decimal.filter((x, i, a) => a.indexOf(x) == i);
-  var password, passwords=[];
+  var password, passwords = [];
 
   // https://github.com/collinjackson/pwdhash-website/blob/gh-pages/hashed-password.js
+
   /* option 1 */
+  // substring of first 6 chars from base64, append 2 upper case, 2 lower case and 4 numbers from end of base64
+  // xxxxxxA0a1B2b3
+  // (A - first upper case from back, B - second upper case from back)
+  // (a - first lower case from back, b - second upper case from back)
+  // (0 - first number from back, 1 - second number from back, 2 - third number from back, 3 - fourth number from back)
   password = [
     chars.substr(0, 6),
     up[up.length-1], num[num.length-1], low[low.length-1], num[num.length-2],
@@ -368,6 +375,11 @@ function calculatePassword(master, salt) {
   passwords.push(password);
 
   /* option 2 */
+  // create array with first 4 upper case, first 6 lower case, first 4 numbers
+  // use first x unique digits from decimal array to determine relative positions of above 14 chars in password
+  // place each char from above list in array position determined by position array values
+  // [ABCDabcdef0123] [201, 87, 137, 45, ...]
+  // A => 201, B => 87, C => 137, ...
   password = [];
   charsUsed = [].concat(up.slice(0, 4), low.slice(0, 6), num.slice(0, 4));
   charsUsed.forEach((c, i) => {

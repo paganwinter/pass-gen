@@ -162,7 +162,8 @@ button {
   margin: 10px;
   margin-bottom: 20px;
 }
-button:focus {
+button:focus,
+button:hover {
   box-shadow: 0 0 8px rgba(0,0,0,.18), 0 8px 16px rgba(0,0,0,.36);
 }
 button:active {
@@ -217,14 +218,14 @@ button:active.color-2 {
 <div class="grid" style="max-width: 420px; margin-top: 40px;">
   <div class="row">
     <div class="col-12 col form-group">
-      <input type="text" id="input-salt" _placeholder="Salt" autocomplete="off" tabindex="1" required="required" />
+      <input type="text" id="input-salt" _placeholder="Salt" autocomplete="off" tabindex="1" required="required" value="" />
       <label for="input-salt" class="control-label">Salt</label>
       <i class="bar"></i>
     </div>
   </div>
   <div class="row">
     <div class="col-12 col form-group">
-      <input type="password" id="input-master" _placeholder="Master" autocomplete="off" tabindex="2" required="required" onfocus="this.type='text'" onblur="this.type='password'" />
+      <input type="password" id="input-master" _placeholder="Master" autocomplete="off" tabindex="2" required="required" value="" onfocus="this.type='text'" onblur="this.type='password'" />
       <label for="input-master" class="control-label">Master</label>
       <i class="bar"></i>
     </div>
@@ -277,7 +278,6 @@ window.onload = function() {
   $raw = document.getElementById("output-raw");
 
 //  generatePassword();
-
   $salt.focus();
 }
 
@@ -287,15 +287,19 @@ function generatePassword() {
   var passObj = calculatePassword(master, salt);
 
   var pass = passObj.password;
-  $result.value = pass;
+  $result.value = pass.join(" : ");
 
   $raw.value = '';
-  $raw.value += 'length: '+pass.length+", ";
-  $raw.value += 'lower: '+pass.replace(/[^a-z]/g, '').length+", ";
-  $raw.value += 'upper: '+pass.replace(/[^A-Z]/g, '').length+", ";
-  $raw.value += 'number: '+pass.replace(/[^0-9]/g, '').length+", ";
-  $raw.value += 'symbol: '+pass.replace(/[\w]/g, '').length+"\n";
+  for (var i=0 ; i<pass.length ; i++) {
+    $raw.value += pass[i]+" - ";
+    $raw.value += 'length:'+pass[i].length+", ";
+    $raw.value += 'lower:'+pass[i].replace(/[^a-z]/g, '').length+", ";
+    $raw.value += 'upper:'+pass[i].replace(/[^A-Z]/g, '').length+", ";
+    $raw.value += 'number:'+pass[i].replace(/[^0-9]/g, '').length+", ";
+    $raw.value += 'symbol:'+pass[i].replace(/[\w]/g, '').length+"\n";
+  }
 
+  $raw.value += '\n';
   for (step in passObj.steps) {
     $raw.value += "- " + step + ": " + passObj.steps[step] + "\n";
   }
@@ -306,51 +310,60 @@ function generatePassword() {
 function calculatePassword(master, salt) {
   var text = master+salt;
 
-  var hash, chars, up, low, num, sym, pos, password;
   var symMap = ["!", "@", "#", "$", "-", "+", "_", ",", ";", "."];
   var sym = ["@", "-"];
 
-  var hex = getHash(text);
-  var ascii = hex.match(/\w{2}/g).map(a => { return parseInt(a, 16) });
-  var text = ascii.map(a => { return String.fromCharCode(a) }).join("");
-  var b64 = btoa(text);
-
-/*
+  // hashB64 = getHash(text, 'SHA512', 'B64');
+  // hashHex = getHash(text, 'SHA512', 'HEX');
+  var hash = getHash(text);
+  var hex = hash.match(/\w{2}/g).join(" ");
+  var decimal = hash.match(/\w{2}/g).map(a => { return parseInt(a, 16) });
+  var ascii = decimal.map(a => { return String.fromCharCode(a) }).join("");
+  var b64 = btoa(ascii);
+  console.log("hash", hash)
   console.log("hex", hex)
+  console.log("decimal", decimal)
   console.log("ascii", ascii)
-  console.log("text", text)
   console.log("b64 ", b64)
-*/
-  // hash = getHash(text, 'SHA512', 'B64');
 
-  chars = b64.replace(/[\W]/g, '');
-  up    = chars.match(/[A-Z]/g).reverse();
-  low   = chars.match(/[a-z]/g).reverse();
-  num   = chars.match(/[0-9]/g).reverse();
+  var chars = b64.replace(/[\W]/g, '');
+  var up    = chars.match(/[A-Z]/g);
+  var low   = chars.match(/[a-z]/g);
+  var num   = chars.match(/[0-9]/g);
 
+  var pos = decimal.filter((x, i, a) => a.indexOf(x) == i);
+  var password, passwords=[];
+
+  /* option 1 */
   password = [
     chars.substr(0, 6),
-    up[0], num[0], low[0], num[1],
-    up[1], num[2], low[1], num[3]
+    up[up.length-1], num[num.length-1], low[low.length-1], num[num.length-2],
+    up[up.length-2], num[num.length-3], low[low.length-2], num[num.length-4]
   ].join("")
+  passwords.push(password);
 
-  var test = (new Hashes.SHA512().any('abc', '0123456789'+'abcdefghijklmnopqrstuvwxyz'+'abcdefghijklmnopqrstuvwxyz'.toUpperCase()+'!@#$%^&*()_+'));
+  /* option 2 */
+  password = [];
+  charsUsed = [].concat(up.slice(0, 4), low.slice(0, 6), num.slice(0, 4));
+  charsUsed.forEach((c, i) => {
+    password[pos[i]] = c;
+  });
+  password = password.join("")
+  passwords.push(password);
+
+//  var test = (new Hashes.SHA512().any('abc', '0123456789'+'abcdefghijklmnopqrstuvwxyz'+'abcdefghijklmnopqrstuvwxyz'.toUpperCase()+'!@#$%^&*()_+'));
 
   var result = {
-    "password": password,
+    "password": passwords,
     "steps": {
-      "b64": b64,
-      "text": text,
-      "ascii": ascii.join(","),
       "hex": hex,
-      "test": test
+      "decimal": decimal.join(","),
+      "ascii": ascii,
+      "b64": b64,
     }
   };
 
   return result;
-
-//  posHash = getHash(salt+master, 'SHA512, 'B64');
-//  pos = posHash.split("").map(chr => { return (''+chr.charCodeAt(0)).slice(-2) })
 }
 
 

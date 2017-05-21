@@ -215,7 +215,7 @@ button:active.color-2 {
 
 
 <body>
-<div class="grid" style="max-width: 420px; margin-top: 40px;">
+<div class="grid" style="max-width: 500px; margin-top: 0px;">
   <div class="row">
     <div class="col-12 col form-group">
       <input type="text" id="input-salt" _placeholder="Salt" autocomplete="off" tabindex="1" required="required" value="" />
@@ -244,8 +244,8 @@ button:active.color-2 {
     </div>
   </div>
   <div class="row">
-    <div class="col-12 col">
-      <input type="text" id="output-result" autocomplete="off" readonly class="output-result" />
+    <div class="col-12 col" id="pass-container">
+<!--      <input type="text" id="output-result" autocomplete="off" readonly class="output-result" /> -->
     </div>
   </div>
   <div class="row">
@@ -274,11 +274,11 @@ var $salt, $master, $result;
 window.onload = function() {
   $salt = document.getElementById("input-salt");
   $master = document.getElementById("input-master");
-  $result = document.getElementById("output-result");
+  $passContainer = document.getElementById("pass-container");
   $raw = document.getElementById("output-raw");
 
-//  generatePassword();
-  $salt.focus();
+  generatePassword();
+//  $salt.focus();
 }
 
 function generatePassword() {
@@ -287,24 +287,34 @@ function generatePassword() {
   var passObj = calculatePassword(master, salt);
 
   var pass = passObj.password;
-  $result.value = pass.join(" : ");
+  $passContainer.innerHTML = "";
+  pass.forEach(p => {
+    var resultBox = document.createElement('input');
+    resultBox.type = "text";
+    resultBox.className = "output-result";
+    resultBox.autocomplete = "off"
+    resultBox.readonly = true;
+    resultBox.value = p;
+    resultBox.onclick = function() {
+      resultBox.select();
+    }
+    $passContainer.appendChild(resultBox);
+  })
 
   $raw.value = '';
   for (var i=0 ; i<pass.length ; i++) {
     $raw.value += pass[i]+" - ";
-    $raw.value += 'length:'+pass[i].length+", ";
-    $raw.value += 'lower:'+pass[i].replace(/[^a-z]/g, '').length+", ";
-    $raw.value += 'upper:'+pass[i].replace(/[^A-Z]/g, '').length+", ";
-    $raw.value += 'number:'+pass[i].replace(/[^0-9]/g, '').length+", ";
-    $raw.value += 'symbol:'+pass[i].replace(/[\w]/g, '').length+"\n";
+    $raw.value += 'len:'+pass[i].length+", ";
+    $raw.value += 'num:'+pass[i].replace(/[^0-9]/g, '').length+", ";
+    $raw.value += 'up:'+pass[i].replace(/[^A-Z]/g, '').length+", ";
+    $raw.value += 'low:'+pass[i].replace(/[^a-z]/g, '').length+", ";
+    $raw.value += 'sym:'+pass[i].replace(/[\w]/g, '').length+"\n";
   }
-
-  $raw.value += '\n';
+//  $raw.value += '\n';
   for (step in passObj.steps) {
-    $raw.value += "- " + step + ": " + passObj.steps[step] + "\n";
+    $raw.value += "\n\n" + step + ": " + passObj.steps[step]; // + "\n\n";
   }
 
-  $result.select();
 }
 
 function calculatePassword(master, salt) {
@@ -316,7 +326,7 @@ function calculatePassword(master, salt) {
   // hashB64 = getHash(text, 'SHA512', 'B64');
   // hashHex = getHash(text, 'SHA512', 'HEX');
   var hash = getHash(text);
-  var hex = hash.match(/\w{2}/g).join(" ");
+  var hex = hash.match(/\w{2}/g); //.join(" ");
   var decimal = hash.match(/\w{2}/g).map(a => { return parseInt(a, 16) });
   var ascii = decimal.map(a => { return String.fromCharCode(a) }).join("");
   var b64 = btoa(ascii);
@@ -334,6 +344,7 @@ function calculatePassword(master, salt) {
   var pos = decimal.filter((x, i, a) => a.indexOf(x) == i);
   var password, passwords=[];
 
+  // https://github.com/collinjackson/pwdhash-website/blob/gh-pages/hashed-password.js
   /* option 1 */
   password = [
     chars.substr(0, 6),
@@ -356,10 +367,12 @@ function calculatePassword(master, salt) {
   var result = {
     "password": passwords,
     "steps": {
-      "hex": hex,
-      "decimal": decimal.join(","),
-      "ascii": ascii,
+      "up": up.join(" "),
+      "low": low.join(" "),
+      "num": num.join(" "),
       "b64": b64,
+      "decimal": decimal.join(" "),
+      "hex": hex.join(" "),
     }
   };
 

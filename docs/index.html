@@ -234,14 +234,14 @@ input {
 <div class="grid" style="max-width: 500px; margin-top: 0px;">
   <div class="row">
     <div class="col-12 col form-group">
-      <input type="text" id="input-salt" _placeholder="Salt" autocomplete="off" tabindex="1" required="required" value="" />
+      <input type="text" id="input-salt" _placeholder="Salt" autocomplete="off" tabindex="1" required="required" value="" onkeyup="generatePassword()" />
       <label for="input-salt" class="control-label">Salt</label>
       <i class="bar"></i>
     </div>
   </div>
   <div class="row">
     <div class="col-12 col form-group">
-      <input type="password" id="input-master" _placeholder="Master" autocomplete="off" tabindex="2" required="required" value="" onfocus="this.type='text'" onblur="this.type='password'" />
+      <input type="password" id="input-master" _placeholder="Master" autocomplete="off" tabindex="2" required="required" value="" onkeyup="generatePassword()" onfocus="this.type='text'" onblur="this.type='password'" />
       <label for="input-master" class="control-label">Master</label>
       <i class="bar"></i>
     </div>

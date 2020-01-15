@@ -4,6 +4,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
+<style>
+body {
+  font-family: "Arial";
+}
+</style>
+
 <script>
 // https://github.com/ricmoo/scrypt-js/blob/master/scrypt.js
 // SCRYPT BEGINS
@@ -638,6 +644,9 @@
   <input type="text" id="special" placeholder="special char" /><br />
   <input type="button" id="generate" value="Generate" onclick="doGeneratePassword()" />
   <input type="button" id="clear" value="Clear" onclick="clearAll()" /><br />
+
+  <a onclick="this.href='data:text/html;charset=UTF-8,'+encodeURIComponent(document.documentElement.outerHTML)" href="#" download="pass-gen-combined.html">Download a copy for offline use</a>
+
   <pre id="password"></pre>
   <pre id="metadata"></pre>
 </form>

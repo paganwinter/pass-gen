@@ -1,0 +1,50 @@
+<html>
+<head>
+  <title>Password Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<form>
+  <input type="text" id="passphrase" placeholder="master passphrase" /><br />
+  <input type="text" id="account" placeholder="account" />
+  <input type="text" id="service" placeholder="service" />
+  <input type="text" id="variant" placeholder="variant" /><br />
+  <input type="button" id="generate" value="Generate" onclick="doGeneratePassword()" />
+  <input type="button" id="clear" value="Clear" onclick="clearAll()" /><br />
+  <pre id="password"></pre>
+  <pre id="metadata"></pre>
+</form>
+<script src="pass-gen.js"></script>
+<script>
+const { generatePassword } = passgen
+let passphraseEl = document.getElementById('passphrase')
+let accountEl = document.getElementById('account')
+let serviceEl = document.getElementById('service')
+let variantEl = document.getElementById('variant')
+let passwordEl = document.getElementById('password')
+let metadataEl = document.getElementById('metadata')
+
+function clearAll() {
+  passphrase.value = ''
+  account.value = ''
+  service.value = ''
+  variant.value = ''
+  passwordEl.innerHTML = ''
+  metadataEl.innerHTML = ''
+}
+async function doGeneratePassword() {
+  let passphrase = passphraseEl.value
+  let account = accountEl.value
+  let service = serviceEl.value
+  let variant = variantEl.value
+  let opts = { passphrase, account, service, variant }
+  console.log(opts)
+
+  let passObj = await generatePassword(opts)
+  console.log(passObj)
+  passwordEl.innerHTML = passObj.password
+  metadataEl.innerHTML = JSON.stringify(passObj, 0, 2)
+}
+</script>
+</body>
+</html>

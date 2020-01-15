@@ -1,0 +1,14 @@
+<html>
+<head>
+<script src="../pass-gen.js"></script>
+<script src="test-data.js"></script>
+<script>
+(async function () {
+  const { generatePassword } = passgen
+  testData.forEach(async function (t) {
+    console.log(await generatePassword(t))
+  })
+}())
+</script>
+</head>
+</html>

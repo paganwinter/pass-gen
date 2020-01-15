@@ -8,7 +8,8 @@
   <input type="text" id="passphrase" placeholder="master passphrase" /><br />
   <input type="text" id="account" placeholder="account" />
   <input type="text" id="service" placeholder="service" />
-  <input type="text" id="variant" placeholder="variant" /><br />
+  <input type="text" id="variant" placeholder="variant" />
+  <input type="text" id="special" placeholder="special char" /><br />
   <input type="button" id="generate" value="Generate" onclick="doGeneratePassword()" />
   <input type="button" id="clear" value="Clear" onclick="clearAll()" /><br />
   <pre id="password"></pre>
@@ -21,29 +22,41 @@ let passphraseEl = document.getElementById('passphrase')
 let accountEl = document.getElementById('account')
 let serviceEl = document.getElementById('service')
 let variantEl = document.getElementById('variant')
+let specialEl = document.getElementById('special')
 let passwordEl = document.getElementById('password')
 let metadataEl = document.getElementById('metadata')
 
 function clearAll() {
   passphrase.value = ''
-  account.value = ''
-  service.value = ''
-  variant.value = ''
+  accountEl.value = ''
+  serviceEl.value = ''
+  variantEl.value = ''
+  specialEl.value = ''
   passwordEl.innerHTML = ''
   metadataEl.innerHTML = ''
+  navigator.clipboard.writeText('').then().catch(() => alert('could not clear clipboard'))
 }
 async function doGeneratePassword() {
   let passphrase = passphraseEl.value
   let account = accountEl.value
   let service = serviceEl.value
   let variant = variantEl.value
-  let opts = { passphrase, account, service, variant }
-  console.log(opts)
+  let special = specialEl.value
+  let opts = { passphrase, account, service, variant, special }
 
   let passObj = await generatePassword(opts)
   console.log(passObj)
   passwordEl.innerHTML = passObj.password
   metadataEl.innerHTML = JSON.stringify(passObj, 0, 2)
+
+  navigator.clipboard.writeText(passObj.password).then().catch(() => alert('could not copy'))
+  /*
+  try {
+    document.execCommand('copy')
+  } catch (err) {
+    alert('Unable to Copy')
+  }
+  */
 }
 </script>
 </body>

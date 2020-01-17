@@ -532,7 +532,7 @@ body {
     account = account.toLowerCase()
     service = service.toLowerCase()
 
-    const masterKeySalt = `${account}.${account.length}`
+    const masterKeySalt = account
     const passwordStr = `${account}.${account.length}@${service}.${service.length}:${variant}.${variant.length}`
 
     const masterKey = scryptWrapper(passphrase, masterKeySalt, 64, { N: 16384, r: 8, p: 1 })
@@ -546,6 +546,9 @@ body {
   const NUMERIC = '0123456789'
   const ALPHA_NUMERIC = ALPHA_UPPER + ALPHA_LOWER + NUMERIC
   const BASE64_CHARS = ALPHA_NUMERIC + '+/'
+  // const SPECIAL_CHARS = '`~!@#$%^&*-_=+,.:;\'"|\\/?(){}[]<>' // 32 chars
+  const SPECIAL_CHARS = '!@#$%^&*-_=+,.;:' // 16 chars
+  // const SPECIAL_CHARS = '!@#$-_=+' // 8 chars
 
   const generatePassword = async function (opts) {
     let { special } = opts
@@ -554,7 +557,7 @@ body {
     let passInit = ''
     let replPos = []
     let replacements = []
-    let forcedLow, forcedUp, forcedNum
+    let forcedLow, forcedUp, forcedNum, forcedSpecChar, forcedSpec
     let replaceMask = ' '.repeat(16)
     let password
 
@@ -582,9 +585,22 @@ body {
         replPos.push(pos)
         entropyIndices[entropyOffset] = `pos:${posChar}->${pos}`
       } else {
-        entropyIndices[entropyOffset] = `pos:${posChar}->${pos}`
+        entropyIndices[entropyOffset] = `pos:${posChar}->${pos}:skip`
       }
       entropyOffset++
+    }
+
+    // use next char to derive special char
+    if (special === '') {
+      forcedSpecChar = entropyB64[entropyOffset]
+      forcedSpecIndex = (BASE64_CHARS.indexOf(forcedSpecChar) % SPECIAL_CHARS.length)
+      forcedSpec = SPECIAL_CHARS[forcedSpecIndex]
+      replacements[replPos[3]] = forcedSpec
+      forcedSpecPos = entropyOffset
+      entropyIndices[forcedSpecPos] = `spl:${forcedSpecChar}->${forcedSpecIndex}->${forcedSpec}`
+      entropyOffset++
+    } else {
+      replacements[replPos[3]] = special
     }
 
     // use the first lower, upper, and numeric, after offset
@@ -603,7 +619,6 @@ body {
     forcedNumPos = entropyOffset + entropyB64.substr(entropyOffset).indexOf(forcedNum)
     entropyIndices[forcedNumPos] = `num:${forcedNum}`
 
-    replacements[replPos[3]] = special || '_'
 
     for (let i = 0; i < 16; i++) {
       let pos = i
@@ -614,7 +629,7 @@ body {
       }
     }
 
-    return { passInit, replMask: replaceMask, password, entropyIndices, entropyB64 }
+    return { passInit, replMask: replaceMask, password, entropyB64, entropyIndices }
   }
 
   let lib = {
@@ -638,10 +653,10 @@ body {
 <!-- <script src="pass-gen.js"></script> -->
 
 <form>
-  <input type="text" id="passphrase" placeholder="master passphrase" /><br />
-  <input type="text" id="account" placeholder="account" />
-  <input type="text" id="service" placeholder="service" />
-  <input type="text" id="variant" placeholder="variant" />
+  <input type="text" id="passphrase" placeholder="master passphrase" autocapitalize="off" /><br />
+  <input type="text" id="account" placeholder="account" autocapitalize="off" />
+  <input type="text" id="service" placeholder="service" autocapitalize="off" />
+  <input type="text" id="variant" placeholder="variant" autocapitalize="off" />
   <input type="text" id="special" placeholder="special char" /><br />
   <input type="button" id="generate" value="Generate" onclick="doGeneratePassword()" />
   <input type="button" id="clear" value="Clear" onclick="clearAll()" /><br />
@@ -649,7 +664,10 @@ body {
   <pre id="password"></pre>
   <pre id="metadata"></pre>
 
-  <br /><br /><a onclick="this.href='data:text/html;charset=UTF-8,'+encodeURIComponent(document.documentElement.outerHTML)" href="#" download="pass-gen-combined.html">Download a copy for offline use</a>
+  <br /><br />
+  <a onclick="this.href='data:text/html;charset=UTF-8,'+encodeURIComponent(document.documentElement.outerHTML)" href="#" download="pass-gen-combined.html">Download a copy for offline use</a><br />
+  <a href="https://paganwinter.github.io/pass-gen">Online</a><br />
+  <a href="https://github.com/paganwinter/pass-gen">Repo</a><br />
 </form>
 <script>
 const { generatePassword } = passgen

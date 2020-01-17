@@ -519,7 +519,7 @@
     account = account.toLowerCase()
     service = service.toLowerCase()
 
-    const masterKeySalt = `${account}.${account.length}`
+    const masterKeySalt = account
     const passwordStr = `${account}.${account.length}@${service}.${service.length}:${variant}.${variant.length}`
 
     const masterKey = scryptWrapper(passphrase, masterKeySalt, 64, { N: 16384, r: 8, p: 1 })
@@ -533,6 +533,9 @@
   const NUMERIC = '0123456789'
   const ALPHA_NUMERIC = ALPHA_UPPER + ALPHA_LOWER + NUMERIC
   const BASE64_CHARS = ALPHA_NUMERIC + '+/'
+  // const SPECIAL_CHARS = '`~!@#$%^&*-_=+,.:;\'"|\\/?(){}[]<>' // 32 chars
+  const SPECIAL_CHARS = '!@#$%^&*-_=+,.;:' // 16 chars
+  // const SPECIAL_CHARS = '!@#$-_=+' // 8 chars
 
   const generatePassword = async function (opts) {
     let { special } = opts
@@ -541,7 +544,7 @@
     let passInit = ''
     let replPos = []
     let replacements = []
-    let forcedLow, forcedUp, forcedNum
+    let forcedLow, forcedUp, forcedNum, forcedSpecChar, forcedSpec
     let replaceMask = ' '.repeat(16)
     let password
 
@@ -569,9 +572,22 @@
         replPos.push(pos)
         entropyIndices[entropyOffset] = `pos:${posChar}->${pos}`
       } else {
-        entropyIndices[entropyOffset] = `pos:${posChar}->${pos}`
+        entropyIndices[entropyOffset] = `pos:${posChar}->${pos}:skip`
       }
       entropyOffset++
+    }
+
+    // use next char to derive special char
+    if (special === '') {
+      forcedSpecChar = entropyB64[entropyOffset]
+      forcedSpecIndex = (BASE64_CHARS.indexOf(forcedSpecChar) % SPECIAL_CHARS.length)
+      forcedSpec = SPECIAL_CHARS[forcedSpecIndex]
+      replacements[replPos[3]] = forcedSpec
+      forcedSpecPos = entropyOffset
+      entropyIndices[forcedSpecPos] = `spl:${forcedSpecChar}->${forcedSpecIndex}->${forcedSpec}`
+      entropyOffset++
+    } else {
+      replacements[replPos[3]] = special
     }
 
     // use the first lower, upper, and numeric, after offset
@@ -590,7 +606,6 @@
     forcedNumPos = entropyOffset + entropyB64.substr(entropyOffset).indexOf(forcedNum)
     entropyIndices[forcedNumPos] = `num:${forcedNum}`
 
-    replacements[replPos[3]] = special || '_'
 
     for (let i = 0; i < 16; i++) {
       let pos = i
@@ -601,7 +616,7 @@
       }
     }
 
-    return { passInit, replMask: replaceMask, password, entropyIndices, entropyB64 }
+    return { passInit, replMask: replaceMask, password, entropyB64, entropyIndices }
   }
 
   let lib = {
@@ -621,4 +636,3 @@
     root.passgen = lib
   }
 }(this))
-

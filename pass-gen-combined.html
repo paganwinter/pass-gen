@@ -653,13 +653,13 @@ body {
 </script>
 <!-- <script src="pass-gen.js"></script> -->
 
-<form>
+<form onsubmit="event.preventDefault(); doGeneratePassword()">
   <input type="text" id="passphrase" placeholder="master passphrase" autocapitalize="off" onfocus="this.type='text'" onblur="this.type='password'" /><br />
   <input type="text" id="account" placeholder="account" autocapitalize="off" />
   <input type="text" id="service" placeholder="service" autocapitalize="off" />
   <input type="text" id="variant" placeholder="variant" autocapitalize="off" />
   <input type="text" id="special" placeholder="special char" /><br />
-  <input type="button" id="generate" value="Generate" onclick="doGeneratePassword()" />
+  <input type="submit" id="generate" value="Generate" onclick="doGeneratePassword()" />
   <input type="button" id="clear" value="Clear" onclick="clearAll()" /><br />
 
   <pre id="password"></pre>

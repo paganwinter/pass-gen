@@ -722,6 +722,7 @@ function clearAll() {
   variantEl.value = ''
   specialEl.value = ''
   passwordEl.innerHTML = ''
+  passwordPhoneticsEl.innerHTML = ''
   metadataEl.innerHTML = ''
   navigator.clipboard.writeText('').then().catch(() => alert('could not clear clipboard'))
 }

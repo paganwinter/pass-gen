@@ -660,9 +660,11 @@ body {
   <input type="text" id="variant" placeholder="variant" autocapitalize="off" autocomplete="off" />
   <input type="text" id="special" placeholder="special char" autocomplete="off" /><br />
   <input type="submit" id="generate" value="Generate" onclick="doGeneratePassword()" />
+  <input type="button" id="copy" value="Copy" onclick="copyPassword()" />
   <input type="button" id="clear" value="Clear" onclick="clearAll()" /><br />
 
   <pre id="password"></pre>
+  <pre id="password-phonetics"></pre>
   <pre id="metadata"></pre>
 
   <br /><br />
@@ -678,7 +680,38 @@ let serviceEl = document.getElementById('service')
 let variantEl = document.getElementById('variant')
 let specialEl = document.getElementById('special')
 let passwordEl = document.getElementById('password')
+let passwordPhoneticsEl = document.getElementById('password-phonetics')
 let metadataEl = document.getElementById('metadata')
+
+const PHONETICS = {
+  a: 'alfa',
+  b: 'bravo',
+  c: 'charlie',
+  d: 'delta',
+  e: 'echo',
+  f: 'foxtrot',
+  g: 'golf',
+  h: 'hotel',
+  i: 'india',
+  j: 'juliett',
+  k: 'kilo',
+  l: 'lima',
+  m: 'mike',
+  n: 'november',
+  o: 'oscar',
+  p: 'papa',
+  q: 'quebec',
+  r: 'romeo',
+  s: 'sierra',
+  t: 'tango',
+  u: 'uniform',
+  v: 'victor',
+  w: 'whiskey',
+  x: 'x-ray',
+  y: 'yankee',
+  z: 'zulu',
+}
+
 
 passphraseEl.focus()
 
@@ -692,6 +725,16 @@ function clearAll() {
   metadataEl.innerHTML = ''
   navigator.clipboard.writeText('').then().catch(() => alert('could not clear clipboard'))
 }
+function copyPassword() {
+  navigator.clipboard.writeText(passwordEl.innerHTML).then().catch(() => alert('could not copy'))
+  /*
+  try {
+    document.execCommand('copy')
+  } catch (err) {
+    alert('Unable to Copy')
+  }
+  */
+}
 async function doGeneratePassword() {
   let passphrase = passphraseEl.value
   let account = accountEl.value
@@ -704,15 +747,11 @@ async function doGeneratePassword() {
   console.log(passObj)
   passwordEl.innerHTML = passObj.password
   metadataEl.innerHTML = JSON.stringify(passObj, 0, 2)
-
-  navigator.clipboard.writeText(passObj.password).then().catch(() => alert('could not copy'))
-  /*
-  try {
-    document.execCommand('copy')
-  } catch (err) {
-    alert('Unable to Copy')
-  }
-  */
+  passwordPhoneticsEl.innerHTML = passObj.password.split('').map(p => {
+    let phonetic = PHONETICS[p.toLowerCase()]
+    if (phonetic) return `${p} > ${phonetic}`
+    return p
+  }).join('\n')
 }
 </script>
 </body>
